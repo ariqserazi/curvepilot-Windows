@@ -1,0 +1,12 @@
+{
+  "name": "curvepilot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CurvePilot is a Premiere Pro CEP extension for sampled easing curves and motion keyframes.",
+  "scripts": {
+    "build": "node ./scripts/build-cep-bundle.mjs",
+    "build:cep": "node ./scripts/package-cep-extension.mjs",
+    "build:windows-installer": "node ./scripts/build-windows-installer.mjs",
+    "check": "node ./scripts/validate.mjs"
+  }
+}

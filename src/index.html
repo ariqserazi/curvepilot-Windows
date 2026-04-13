@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CurvePilot</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="../lib/CSInterface.js"></script>
+    <script>
+      (function () {
+        var root = document.getElementById("app");
+
+        function escapeHtml(text) {
+          return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        }
+
+        function showBootError(message) {
+          if (!root) {
+            return;
+          }
+
+          root.innerHTML =
+            '<div class="cp-shell">' +
+              '<div class="cp-box error">' +
+                '<h4>CurvePilot boot error</h4>' +
+                '<p class="cp-note">The panel loaded, but the app failed during startup.</p>' +
+                '<pre class="cp-code cp-small" style="white-space:pre-wrap; margin:10px 0 0;">' + escapeHtml(message) + '</pre>' +
+              '</div>' +
+            '</div>';
+        }
+
+        window.onerror = function (message, source, lineno, colno, error) {
+          showBootError((error && error.stack) || [message, source, lineno, colno].join(" | "));
+        };
+
+        try {
+          if (typeof require !== "function") {
+            showBootError("Node-style require() is unavailable in this CEP panel.");
+            return;
+          }
+
+          var currentPath = decodeURIComponent(window.location.pathname);
+          var basePath = currentPath.substring(0, currentPath.lastIndexOf("/"));
+          var mainPath = basePath + "/main.js";
+          require(mainPath);
+        } catch (error) {
+          showBootError((error && error.stack) || String(error));
+        }
+      })();
+    </script>
+  </body>
+</html>

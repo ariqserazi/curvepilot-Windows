@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0"
+    ExtensionBundleId="com.ariqserazi.curvepilot"
+    ExtensionBundleVersion="1.0.0"
+    ExtensionBundleName="CurvePilot">
+    <ExtensionList>
+        <Extension Id="com.ariqserazi.curvepilot.panel" Version="1.0.0" />
+    </ExtensionList>
+    <ExecutionEnvironment>
+        <HostList>
+            <Host Name="PPRO" Version="[0.0,99.9]" />
+        </HostList>
+        <LocaleList>
+            <Locale Code="All" />
+        </LocaleList>
+        <RequiredRuntimeList>
+            <RequiredRuntime Name="CSXS" Version="9.0" />
+        </RequiredRuntimeList>
+    </ExecutionEnvironment>
+    <DispatchInfoList>
+        <Extension Id="com.ariqserazi.curvepilot.panel">
+            <DispatchInfo>
+                <Resources>
+                    <MainPath>./index.html</MainPath>
+                    <ScriptPath>./jsx/curvepilot-host.jsx</ScriptPath>
+                    <CEFCommandLine>
+                        <Parameter>--enable-nodejs</Parameter>
+                        <Parameter>--enable-javascript-harmony</Parameter>
+                    </CEFCommandLine>
+                </Resources>
+                <Lifecycle>
+                    <AutoVisible>true</AutoVisible>
+                </Lifecycle>
+                <UI>
+                    <Type>Panel</Type>
+                    <Menu>CurvePilot</Menu>
+                    <Geometry>
+                        <Size>
+                            <Width>310</Width>
+                            <Height>640</Height>
+                        </Size>
+                        <MinSize>
+                            <Width>290</Width>
+                            <Height>500</Height>
+                        </MinSize>
+                        <MaxSize>
+                            <Width>900</Width>
+                            <Height>1400</Height>
+                        </MaxSize>
+                    </Geometry>
+                </UI>
+            </DispatchInfo>
+        </Extension>
+    </DispatchInfoList>
+</ExtensionManifest>
