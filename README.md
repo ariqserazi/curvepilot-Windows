@@ -1,15 +1,19 @@
-# CurvePilot (CEP Extension)
+# CurvePilot for Windows
 
-CurvePilot is an Adobe Premiere Pro CEP extension with:
+CurvePilot is an Adobe Premiere Pro CEP extension packaged for Windows with:
 
-- the existing manual macOS install flow
-- a repeatable Windows packaging flow
+- a repeatable CEP staging flow
 - a real per-user Windows installer built with Inno Setup
+- uninstall support for the installed extension files
 
-This repo started as a Premiere UXP panel. It has been converted to CEP so the install flow matches the classic Adobe extension workflow:
+If you want the macOS version, use:
+
+- [https://github.com/ariqserazi/curvepilot](https://github.com/ariqserazi/curvepilot)
+
+This repo uses the existing CEP architecture and packages it for the classic Adobe extension workflow on Windows:
 
 1. build or unpack the extension folder
-2. place the extension folder into the Adobe CEP extensions directory
+2. install it into the Adobe CEP extensions directory
 3. enable `PlayerDebugMode` for unsigned CEP installs
 4. restart Premiere Pro
 5. open the panel from `Window > Extensions`
@@ -118,12 +122,11 @@ curvepilot/
 
 ## Requirements
 
+- Windows
 - Adobe Premiere Pro with CEP panel support
 - For the current target, Premiere Pro 2025 / 25.x is the intended path
-- macOS for the current manual macOS install path
-- Windows for the Inno Setup installer build and install path
 - Node.js v24 or later if you want to run the local build and validation commands
-- Inno Setup 6 on Windows if you want to compile the Windows installer
+- Inno Setup 6 if you want to compile the Windows installer
 
 ## Build Outputs
 
@@ -205,90 +208,76 @@ The uninstaller removes the installed extension folder from:
 
 The installer intentionally does not turn `PlayerDebugMode` back off during uninstall, because that setting may also be needed by other unsigned CEP extensions in the same user profile.
 
-## Manual macOS Install
+## Windows Build And Install
 
-This is the intended install flow for this repo.
+### 1. Build the staged CEP extension folder
 
-### 1. Prepare the extension folder
-
-The folder you copy into Adobe's CEP extensions directory must be the folder that directly contains:
+The staged folder must directly contain:
 
 - `CSXS/manifest.xml`
-- `src/`
+- `index.html`
 - `jsx/`
 - `lib/`
+- `js/`
 
-If you want a clean packaged folder first, run:
+From the repo root:
 
 ```bash
 npm run build:cep
 ```
 
-Then use `build/cep/curvepilot/` as the folder you copy into Adobe's CEP extensions directory.
+That writes the clean extension folder to:
 
-### 2. Copy the extension into the CEP extensions directory
+- `build/cep/curvepilot/`
 
-System-wide CEP install path on macOS:
+### 2. Build the Windows installer
 
-- `/Library/Application Support/Adobe/CEP/extensions/`
-
-Create the directory if it does not already exist:
+After installing Inno Setup 6:
 
 ```bash
-sudo mkdir -p "/Library/Application Support/Adobe/CEP/extensions"
+npm run build:windows-installer
 ```
 
-Copy the `curvepilot` extension folder into it:
+That script:
 
-```bash
-sudo cp -R "/path/to/curvepilot" "/Library/Application Support/Adobe/CEP/extensions/"
-```
+- rebuilds `js/app.bundle.js`
+- refreshes `build/cep/curvepilot/`
+- compiles `installer/windows/curvepilot.iss`
 
-After copying, this file should exist:
+Installer output is written to:
 
-- `/Library/Application Support/Adobe/CEP/extensions/curvepilot/CSXS/manifest.xml`
+- `build/windows-installer/CurvePilot-Setup-<version>.exe`
 
-### 3. Enable PlayerDebugMode
+If `ISCC.exe` is not on `PATH`, set `ISCC_PATH` to the full path of `ISCC.exe` before running the command.
 
-Adobe CEP debug mode must be enabled for unsigned manual extensions to load.
+### 3. Install CurvePilot on Windows
 
-General Adobe CEP guidance uses:
+Run the generated installer:
 
-```bash
-defaults write com.adobe.CSXS.<version> PlayerDebugMode 1
-```
+- it installs CurvePilot per user to `%APPDATA%\Adobe\CEP\extensions\curvepilot`
+- it does not require admin by default
+- it offers to enable `PlayerDebugMode` for `HKCU\Software\Adobe\CSXS.11` and `HKCU\Software\Adobe\CSXS.12`
+- it registers an uninstaller
 
-For Premiere Pro 2025 / CEP 12, enable CSXS 12:
+After install:
 
-```bash
-defaults write com.adobe.CSXS.12 PlayerDebugMode 1
-```
+1. quit Premiere Pro completely
+2. reopen Premiere Pro
+3. open `Window > Extensions > CurvePilot`
+4. if needed, also check `Window > Extensions (Legacy) > CurvePilot`
 
-To cover Premiere builds still using CEP 11 as well, also enable CSXS 11:
+### 4. Manual install without the installer
 
-```bash
-defaults write com.adobe.CSXS.11 PlayerDebugMode 1
-```
+If you want to test the staged CEP folder directly, copy `build/cep/curvepilot/` to:
 
-Refresh the preferences daemon afterward:
+- `%APPDATA%\Adobe\CEP\extensions\curvepilot`
 
-```bash
-killall cfprefsd
-```
+Then enable:
 
-### 4. Restart Premiere Pro
+- `HKEY_CURRENT_USER\Software\Adobe\CSXS.11\PlayerDebugMode = "1"`
+- `HKEY_CURRENT_USER\Software\Adobe\CSXS.12\PlayerDebugMode = "1"`
 
-Quit Premiere Pro completely, then reopen it after the extension folder is in place and PlayerDebugMode is enabled.
-
-### 5. Open CurvePilot
-
-Open the panel from:
-
-- `Window > Extensions > CurvePilot`
-
-If Adobe labels CEP panels as legacy in your Premiere build, also check:
-
-- `Window > Extensions (Legacy) > CurvePilot`
+Then restart Premiere Pro and open CurvePilot from `Window > Extensions`.
 
 ## Verify The Extension Loaded
 
@@ -357,27 +346,16 @@ npm run build:windows-installer
 ### Update
 
 1. Quit Premiere Pro
-2. Replace the existing installed `curvepilot` extension folder for your platform:
-   - macOS: `/Library/Application Support/Adobe/CEP/extensions/curvepilot`
-   - Windows: `%APPDATA%\Adobe\CEP\extensions\curvepilot`
+2. Replace the existing installed folder at:
+   - `%APPDATA%\Adobe\CEP\extensions\curvepilot`
 3. Reopen Premiere Pro
 4. Open CurvePilot again from `Window > Extensions`
-
-Example update command:
-
-```bash
-sudo rm -rf "/Library/Application Support/Adobe/CEP/extensions/curvepilot"
-sudo cp -R "/path/to/curvepilot" "/Library/Application Support/Adobe/CEP/extensions/"
-```
 
 ### Remove
 
 1. Quit Premiere Pro
-2. Delete the installed extension folder:
-
-```bash
-sudo rm -rf "/Library/Application Support/Adobe/CEP/extensions/curvepilot"
-```
+2. Use the Windows uninstaller, or delete:
+   - `%APPDATA%\Adobe\CEP\extensions\curvepilot`
 
 3. Reopen Premiere Pro
 
@@ -404,8 +382,7 @@ CurvePilot should no longer appear under `Window > Extensions`.
 ### CurvePilot does not appear under `Window > Extensions`
 
 - Confirm the installed folder path is exactly:
-  - macOS: `/Library/Application Support/Adobe/CEP/extensions/curvepilot`
-  - Windows: `%APPDATA%\Adobe\CEP\extensions\curvepilot`
+  - `%APPDATA%\Adobe\CEP\extensions\curvepilot`
 - Confirm the folder contains `CSXS/manifest.xml`
 - Confirm `PlayerDebugMode` is enabled for the CEP version Premiere is using
 - Restart Premiere Pro after enabling debug mode
@@ -422,35 +399,16 @@ defaults read com.adobe.CSXS.12 PlayerDebugMode
 defaults read com.adobe.CSXS.11 PlayerDebugMode
 ```
 
-You want the value `1` for the relevant CSXS version.
-
 On Windows, verify the current-user registry values exist:
 
 - `HKEY_CURRENT_USER\Software\Adobe\CSXS.12\PlayerDebugMode`
 - `HKEY_CURRENT_USER\Software\Adobe\CSXS.11\PlayerDebugMode`
 
-### PlayerDebugMode command ran, but Premiere still ignores it
-
-- Run both:
-
-```bash
-defaults write com.adobe.CSXS.12 PlayerDebugMode 1
-defaults write com.adobe.CSXS.11 PlayerDebugMode 1
-killall cfprefsd
-```
-
-- Then fully quit and reopen Premiere Pro
-
 ### Manifest issues
 
 - The root extension folder must contain `CSXS/manifest.xml`
-- The extension id in `CSXS/manifest.xml` must stay consistent with the `.debug` file
+- The extension id in `CSXS/manifest.xml` must stay consistent with `.debug`
 - If you edit the manifest, restart Premiere Pro before expecting the change to show up
-
-### Permissions problems when copying into `/Library/...`
-
-- The system-wide install path requires admin rights
-- Use `sudo` when creating or copying into `/Library/Application Support/Adobe/CEP/extensions/`
 
 ### Windows installer build fails before compilation
 
@@ -501,12 +459,9 @@ What was verified directly in this workspace:
 
 What was not verified in-host here:
 
-- manual copy into `/Library/Application Support/Adobe/CEP/extensions/`
-- PlayerDebugMode enablement on this Mac
 - running the generated Windows installer on a real Windows machine
 - registry changes under real Windows `HKCU\Software\Adobe\CSXS.11` and `HKCU\Software\Adobe\CSXS.12`
 - live appearance under `Window > Extensions` on Windows Premiere
-- live appearance under `Window > Extensions`
 - end-to-end apply behavior against a real Premiere sequence
 
-That final host-side verification still needs to be done on real Premiere environments on macOS and Windows.
+That final host-side verification still needs to be done on a real Windows Premiere environment.
