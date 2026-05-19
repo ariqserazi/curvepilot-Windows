@@ -4,6 +4,7 @@ CurvePilot is an Adobe Premiere Pro CEP extension packaged for Windows with:
 
 - a repeatable CEP staging flow
 - a real per-user Windows installer built with Inno Setup
+- a one-click batch installer for users installing directly from the repo
 - uninstall support for the installed extension files
 
 If you want the macOS version, use:
@@ -149,6 +150,23 @@ The staged CEP folder includes the runtime files Premiere needs:
 - `.debug`
 
 ## Windows Build And Install
+
+### Fastest User Install
+
+If you want the simplest direct install from this repo on Windows, run:
+
+```bat
+install-curvepilot.bat
+```
+
+That batch file:
+
+- builds the latest staged CEP package when Node.js is available
+- falls back to the existing staged files or repo files if needed
+- installs CurvePilot into `%APPDATA%\Adobe\CEP\extensions\curvepilot`
+- enables `PlayerDebugMode` for `HKCU\Software\Adobe\CSXS.11` and `HKCU\Software\Adobe\CSXS.12`
+
+After it finishes, restart Premiere Pro and open `Window > Extensions > CurvePilot`.
 
 ### 1. Build the staged CEP extension folder
 

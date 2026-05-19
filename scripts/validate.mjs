@@ -6,6 +6,7 @@ const root = path.resolve(process.cwd())
 const requiredFiles = [
   "CSXS/manifest.xml",
   ".debug",
+  "install-curvepilot.bat",
   "package.json",
   "installer/windows/curvepilot.iss",
   "lib/CSInterface.js",
